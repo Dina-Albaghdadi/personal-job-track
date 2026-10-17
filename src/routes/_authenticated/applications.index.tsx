@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/applications/")({
   component: Applications,
 });
 
-type App = NonNullable<Awaited<ReturnType<typeof applicationsQuery.queryFn>>>[number];
+type App = import("@/integrations/supabase/types").Database["public"]["Tables"]["job_applications"]["Row"];
 
 function Applications() {
   const { data, isLoading, isError } = useQuery(applicationsQuery);

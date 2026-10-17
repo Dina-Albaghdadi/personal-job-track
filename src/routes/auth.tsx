@@ -108,7 +108,7 @@ function SignupForm() {
     setInfo("");
     const errs: { email?: string; password?: string; confirm?: string } = {};
     const em = emailSchema.safeParse(email);
-    if (!em.success) errs.email = em.error.issues[0].message;
+    if (!em.success) errs.email = em.error.issues[0]?.message ?? "Please enter a valid email address.";
     if (password.length < 6) errs.password = "Password must be at least 6 characters.";
     if (password !== confirm) errs.confirm = "Passwords do not match.";
     setErrors(errs);
