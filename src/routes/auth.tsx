@@ -97,7 +97,7 @@ function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; confirm?: string }>({});
   const [formError, setFormError] = useState("");
   const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,7 +106,7 @@ function SignupForm() {
     e.preventDefault();
     setFormError("");
     setInfo("");
-    const errs: Record<string, string> = {};
+    const errs: { email?: string; password?: string; confirm?: string } = {};
     const em = emailSchema.safeParse(email);
     if (!em.success) errs.email = em.error.issues[0].message;
     if (password.length < 6) errs.password = "Password must be at least 6 characters.";
