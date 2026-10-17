@@ -10,33 +10,109 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedApplicationsIndexRouteImport } from './routes/_authenticated/applications.index'
+import { Route as AuthenticatedApplicationsNewRouteImport } from './routes/_authenticated/applications.new'
+import { Route as AuthenticatedApplicationsIdEditRouteImport } from './routes/_authenticated/applications.$id.edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedApplicationsIndexRoute =
+  AuthenticatedApplicationsIndexRouteImport.update({
+    id: '/applications/',
+    path: '/applications/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedApplicationsNewRoute =
+  AuthenticatedApplicationsNewRouteImport.update({
+    id: '/applications/new',
+    path: '/applications/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedApplicationsIdEditRoute =
+  AuthenticatedApplicationsIdEditRouteImport.update({
+    id: '/applications/$id/edit',
+    path: '/applications/$id/edit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/applications/new': typeof AuthenticatedApplicationsNewRoute
+  '/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/applications/$id/edit': typeof AuthenticatedApplicationsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/applications/new': typeof AuthenticatedApplicationsNewRoute
+  '/applications': typeof AuthenticatedApplicationsIndexRoute
+  '/applications/$id/edit': typeof AuthenticatedApplicationsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/applications/new': typeof AuthenticatedApplicationsNewRoute
+  '/_authenticated/applications/': typeof AuthenticatedApplicationsIndexRoute
+  '/_authenticated/applications/$id/edit': typeof AuthenticatedApplicationsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/applications/new'
+    | '/applications/'
+    | '/applications/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/applications/new'
+    | '/applications'
+    | '/applications/$id/edit'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/applications/new'
+    | '/_authenticated/applications/'
+    | '/_authenticated/applications/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +124,72 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/applications/': {
+      id: '/_authenticated/applications/'
+      path: '/applications'
+      fullPath: '/applications/'
+      preLoaderRoute: typeof AuthenticatedApplicationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/applications/new': {
+      id: '/_authenticated/applications/new'
+      path: '/applications/new'
+      fullPath: '/applications/new'
+      preLoaderRoute: typeof AuthenticatedApplicationsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/applications/$id/edit': {
+      id: '/_authenticated/applications/$id/edit'
+      path: '/applications/$id/edit'
+      fullPath: '/applications/$id/edit'
+      preLoaderRoute: typeof AuthenticatedApplicationsIdEditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedApplicationsNewRoute: typeof AuthenticatedApplicationsNewRoute
+  AuthenticatedApplicationsIndexRoute: typeof AuthenticatedApplicationsIndexRoute
+  AuthenticatedApplicationsIdEditRoute: typeof AuthenticatedApplicationsIdEditRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedApplicationsNewRoute: AuthenticatedApplicationsNewRoute,
+  AuthenticatedApplicationsIndexRoute: AuthenticatedApplicationsIndexRoute,
+  AuthenticatedApplicationsIdEditRoute: AuthenticatedApplicationsIdEditRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
