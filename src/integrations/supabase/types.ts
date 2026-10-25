@@ -23,6 +23,7 @@ export type Database = {
           job_link: string | null
           job_title: string
           notes: string | null
+          required_skills: string[]
           status: string
           user_id: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           job_link?: string | null
           job_title: string
           notes?: string | null
+          required_skills?: string[]
           status?: string
           user_id?: string
         }
@@ -45,6 +47,7 @@ export type Database = {
           job_link?: string | null
           job_title?: string
           notes?: string | null
+          required_skills?: string[]
           status?: string
           user_id?: string
         }
