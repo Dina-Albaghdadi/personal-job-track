@@ -43,7 +43,48 @@ export function ApplicationForm({ id, initial, initialSkills }: { id?: string; i
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const set = <K extends keyof ApplicationInput>(k: K, v: ApplicationInput[K]) => setValues((s) => ({ ...s, [k]: v }));
+  const set = <K extends keyof ApplicationInput>(k: K, v: ApplicationInput[K]) => {
+    setValues((s) => ({ ...s, [k]: v }));
+    setNotFound((s) => {
+      if (!s.has(k as "company")) return s;
+      const n = new Set(s);
+      n.delete(k as "company");
+      return n;
+    });
+  };
+
+  async function extract() {
+    setExtractError("");
+    if (!jobPost.trim() || jobPost.length > JOB_POST_MAX_LENGTH) {
+      setExtractError(EXTRACT_FAILURE_MESSAGE);
+      return;
+    }
+    setExtracting(true);
+    try {
+      const res = await extractFn({ data: { job_post: jobPost } });
+      if (!res.ok) {
+        setExtractError(res.error);
+        return;
+      }
+      const d = res.details;
+      const missing = new Set<"company" | "job_title" | "job_link">();
+      if (!d.company) missing.add("company");
+      if (!d.job_title) missing.add("job_title");
+      if (!d.job_link) missing.add("job_link");
+      setValues((s) => ({
+        ...s,
+        company: d.company ?? s.company,
+        job_title: d.job_title ?? s.job_title,
+        job_link: d.job_link ?? s.job_link,
+      }));
+      setNotFound(missing);
+      setSkills(d.required_skills);
+    } catch {
+      setExtractError(EXTRACT_FAILURE_MESSAGE);
+    } finally {
+      setExtracting(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,7 +101,7 @@ export function ApplicationForm({ id, initial, initialSkills }: { id?: string; i
     }
     setErrors({});
     const d = parsed.data;
-    const payload = { ...d, job_link: d.job_link || null, notes: d.notes || null };
+    const payload = { ...d, job_link: d.job_link || null, notes: d.notes || null, required_skills: skills };
     setSaving(true);
     const { error } = id
       ? await supabase.from("job_applications").update(payload).eq("id", id)
@@ -82,6 +123,27 @@ export function ApplicationForm({ id, initial, initialSkills }: { id?: string; i
       <CardContent className="pt-6">
         <form onSubmit={submit} className="space-y-5" noValidate>
           {formError && <Alert variant="destructive"><AlertDescription>{formError}</AlertDescription></Alert>}
+          <Collapsible open={extractOpen} onOpenChange={setExtractOpen} className="space-y-3 rounded-md border p-4">
+            <CollapsibleTrigger asChild>
+              <Button type="button" variant="ghost" className="w-full justify-start gap-2 px-0 font-medium">
+                <Sparkles className="h-4 w-4" />
+                Extract from job post
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label htmlFor="job_post">Paste the job post</Label>
+                  <span className="text-xs text-muted-foreground">{jobPost.length}/{JOB_POST_MAX_LENGTH}</span>
+                </div>
+                <Textarea id="job_post" rows={6} maxLength={JOB_POST_MAX_LENGTH} value={jobPost} onChange={(e) => setJobPost(e.target.value)} />
+              </div>
+              {extractError && <Alert variant="destructive"><AlertDescription>{extractError}</AlertDescription></Alert>}
+              <Button type="button" variant="secondary" onClick={extract} disabled={extracting || !jobPost.trim()}>
+                {extracting ? "Extracting..." : "Extract details"}
+              </Button>
+            </CollapsibleContent>
+          </Collapsible>
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="company">Company *</Label>
