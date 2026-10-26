@@ -32,6 +32,7 @@ function EditPage() {
       {data && (
         <ApplicationForm
           id={id}
+          initialSkills={data.required_skills}
           initial={{
             company: data.company,
             job_title: data.job_title,

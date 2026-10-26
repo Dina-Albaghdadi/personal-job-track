@@ -149,17 +149,20 @@ export function ApplicationForm({ id, initial, initialSkills }: { id?: string; i
               <Label htmlFor="company">Company *</Label>
               <Input id="company" value={values.company} onChange={(e) => set("company", e.target.value)} />
               {err("company")}
+              {notFound.has("company") && !values.company && <p className="text-sm text-muted-foreground">Not found in the job post</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="job_title">Job title *</Label>
               <Input id="job_title" value={values.job_title} onChange={(e) => set("job_title", e.target.value)} />
               {err("job_title")}
+              {notFound.has("job_title") && !values.job_title && <p className="text-sm text-muted-foreground">Not found in the job post</p>}
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="job_link">Job link</Label>
             <Input id="job_link" placeholder="https://" value={values.job_link} onChange={(e) => set("job_link", e.target.value)} />
             {err("job_link")}
+            {notFound.has("job_link") && !values.job_link && <p className="text-sm text-muted-foreground">Not found in the job post</p>}
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2">
@@ -200,6 +203,26 @@ export function ApplicationForm({ id, initial, initialSkills }: { id?: string; i
             <Textarea id="notes" rows={4} value={values.notes} onChange={(e) => set("notes", e.target.value)} />
             {err("notes")}
           </div>
+          {skills.length > 0 && (
+            <div className="space-y-2">
+              <Label>Required skills</Label>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <Badge key={skill} variant="secondary" className="gap-1">
+                    {skill}
+                    <button
+                      type="button"
+                      aria-label={`Remove ${skill}`}
+                      onClick={() => setSkills((s) => s.filter((x) => x !== skill))}
+                      className="ml-1"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => navigate({ to: "/applications" })}>Cancel</Button>
             <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
