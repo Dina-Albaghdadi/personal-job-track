@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { format, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { applicationSchema, friendlyError, STATUSES, todayStr, type ApplicationInput, type Status } from "@/lib/applications";
+import { extractJobPostDetails } from "@/lib/extraction.functions";
+import { EXTRACT_FAILURE_MESSAGE, JOB_POST_MAX_LENGTH } from "@/lib/extraction";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,9 +24,16 @@ import { cn } from "@/lib/utils";
 
 type Errors = Partial<Record<keyof ApplicationInput, string>>;
 
-export function ApplicationForm({ id, initial }: { id?: string; initial?: Partial<ApplicationInput> }) {
+export function ApplicationForm({ id, initial, initialSkills }: { id?: string; initial?: Partial<ApplicationInput>; initialSkills?: string[] }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const extractFn = useServerFn(extractJobPostDetails);
+  const [skills, setSkills] = useState<string[]>(initialSkills ?? []);
+  const [jobPost, setJobPost] = useState("");
+  const [extractOpen, setExtractOpen] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState("");
+  const [notFound, setNotFound] = useState<Set<"company" | "job_title" | "job_link">>(new Set());
   const [values, setValues] = useState<ApplicationInput>({
     company: "", job_title: "", job_link: "", applied_date: todayStr(), status: "Applied", notes: "",
     ...initial,
